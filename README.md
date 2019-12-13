@@ -1,1 +1,16 @@
 # skywire-peering-daemon
+
+##### skywire-peering-daemon is a [Skywire](https://github.com/SkycoinProject/skywire) auto-peering daemon running functionality
+
+## Run
+
+Clone project ```git clone https://github.com/Kifen/skywire-peering-daemon.git```
+
+Build binary:
+```
+cd skywire-peering-daemon/cmd
+go build
+
+```
+Run daemon ```./cmd```
+The daemon uses the default port 3000 to send broadcasts and listen to incoming broadcasts. 
