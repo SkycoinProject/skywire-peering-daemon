@@ -4,7 +4,7 @@
 
 ## Run
 
-Clone project ```git clone https://github.com/Kifen/skywire-peering-daemon.git```
+Clone project ```git clone https://github.com/SkycoinProject/skywire-peering-daemon.git```
 
 Build binary:
 ```
