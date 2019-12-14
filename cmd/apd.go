@@ -6,8 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Kifen/apd/src"
 	"github.com/SkycoinProject/skycoin/src/cipher"
+	"github.com/SkycoinProject/skywire-peering-daemon/src"
 )
 
 func main() {

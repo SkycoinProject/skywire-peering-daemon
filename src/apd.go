@@ -26,7 +26,7 @@ type Apd struct {
 func NewApd() *Apd {
 	return &Apd{
 		BroadCastIP: "255.255.255.255",
-		Port:        8080,
+		Port:        3000,
 		LocalIP:     getLocalIP(),
 		Host:        "localhost",
 		PacketMap:   make(map[string]string),
