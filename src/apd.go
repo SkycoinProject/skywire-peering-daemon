@@ -17,24 +17,27 @@ type Apd struct {
 	BroadCastIP string
 	LocalIP     string
 	Port        int
-	Host        string
 	PacketMap   map[string]string
 	DoneCh      chan error
 	PacketCh    chan Packet
 }
 
+// NewApd returns an Apd type
 func NewApd() *Apd {
 	return &Apd{
 		BroadCastIP: "255.255.255.255",
 		Port:        3000,
 		LocalIP:     getLocalIP(),
-		Host:        "localhost",
 		PacketMap:   make(map[string]string),
 		DoneCh:      make(chan error),
 		PacketCh:    make(chan Packet, 10),
 	}
 }
 
+// BroadCastPubKey broadcasts a UDP packet which contains a public key
+// to the local network's broadcast address.
+//
+// It sends the broadcasts at ten minute intervals.
 func (apd *Apd) BroadCastPubKey(timer *time.Ticker) {
 	for {
 		select {
@@ -50,6 +53,7 @@ func (apd *Apd) BroadCastPubKey(timer *time.Ticker) {
 	}
 }
 
+// Listen listens for incoming broadcasts on a local network, and reads incoming UDP broadcasts.
 func (apd *Apd) Listen() {
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", apd.Port))
 	conn, err := net.ListenUDP("udp", addr)
@@ -79,6 +83,8 @@ func (apd *Apd) Listen() {
 	}
 }
 
+// Run starts an auto-peering daemon process in two goroutines.
+// The daemon broadcasts a public key and listens for incoming broadcasts.
 func (apd *Apd) Run() {
 	t := time.NewTicker(10 * time.Second)
 
@@ -86,6 +92,8 @@ func (apd *Apd) Run() {
 	go apd.Listen()
 }
 
+// RegisterPubKey checks if a public key received from a broadcast is already registered.
+// It adds only new public keys to a map.
 func (apd *Apd) RegisterPubKey(packet Packet) {
 	if _, ok := apd.PacketMap[packet.PublicKey]; !ok {
 		apd.PacketMap[packet.PublicKey] = packet.IP

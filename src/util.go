@@ -7,6 +7,8 @@ import (
 	"os"
 )
 
+// BroadCastPubKey broadcasts a UDP packet containing the public key of the local visor.
+// Broadcasts is sent on the local network broadcasts address.
 func BroadCastPubKey(pubkey, broadCastIP string, port int) error {
 	address := fmt.Sprintf("%s:%d", broadCastIP, port)
 	bAddr, err := net.ResolveUDPAddr("udp", address)

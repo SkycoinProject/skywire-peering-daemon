@@ -19,6 +19,7 @@ func main() {
 
 	apd.PublicKey = pubKey.Hex()
 
+	// Run the daemon
 	apd.Run()
 
 	for {
