@@ -84,11 +84,15 @@ func (apd *Apd) Listen() {
 }
 
 // Run starts an auto-peering daemon process in two goroutines.
-// The daemon broadcasts a public key and listens for incoming broadcasts.
+// The daemon broadcasts a public key in a goroutine, and listens
+// for incoming broadcasts in another goroutine.
 func (apd *Apd) Run() {
 	t := time.NewTicker(10 * time.Second)
 
+	// send broadcasts
 	go apd.BroadCastPubKey(t)
+
+	// listen for incoming broadcasts
 	go apd.Listen()
 }
 
