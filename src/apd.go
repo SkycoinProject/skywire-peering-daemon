@@ -7,43 +7,43 @@ import (
 	"time"
 )
 
+const (
+	defaultBroadCastIP = "255.255.255.255"
+)
+
 type Packet struct {
 	PublicKey string
 	IP        string
 }
 
 type Apd struct {
-	PublicKey   string
-	BroadCastIP string
-	LocalIP     string
-	Port        int
-	PacketMap   map[string]string
-	DoneCh      chan error
-	PacketCh    chan Packet
+	PublicKey string
+	LocalIP   string
+	Port      int
+	PacketMap map[string]string
+	DoneCh    chan error
+	PacketCh  chan Packet
 }
 
 // NewApd returns an Apd type
 func NewApd() *Apd {
 	return &Apd{
-		BroadCastIP: "255.255.255.255",
-		Port:        3000,
-		LocalIP:     getLocalIP(),
-		PacketMap:   make(map[string]string),
-		DoneCh:      make(chan error),
-		PacketCh:    make(chan Packet, 10),
+		Port:      3000,
+		LocalIP:   getLocalIP(),
+		PacketMap: make(map[string]string),
+		DoneCh:    make(chan error),
+		PacketCh:  make(chan Packet, 10),
 	}
 }
 
 // BroadCastPubKey broadcasts a UDP packet which contains a public key
 // to the local network's broadcast address.
-//
-// It sends the broadcasts at ten minute intervals.
-func (apd *Apd) BroadCastPubKey(timer *time.Ticker) {
+func (apd *Apd) BroadCastPubKey(broadCastIP string, timer *time.Ticker) {
 	for {
 		select {
 		case <-timer.C:
 			log.Println("Broadcasting public key...")
-			err := BroadCastPubKey(apd.PublicKey, apd.BroadCastIP, apd.Port)
+			err := BroadCastPubKey(apd.PublicKey, broadCastIP, apd.Port)
 			if err != nil {
 				log.Println(err)
 				apd.DoneCh <- err
@@ -63,7 +63,7 @@ func (apd *Apd) Listen() {
 	}
 
 	defer conn.Close()
-	log.Printf("Auto-peering Daemon up and listening on port %d", apd.Port)
+	log.Printf("Auto-peering Daemon up and running on port %d", apd.Port)
 
 	for {
 		buffer := make([]byte, 1024)
@@ -89,8 +89,8 @@ func (apd *Apd) Listen() {
 func (apd *Apd) Run() {
 	t := time.NewTicker(10 * time.Second)
 
-	// send broadcasts
-	go apd.BroadCastPubKey(t)
+	// send broadcasts at ten minute intervals
+	go apd.BroadCastPubKey(defaultBroadCastIP, t)
 
 	// listen for incoming broadcasts
 	go apd.Listen()
