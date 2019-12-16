@@ -39,10 +39,12 @@ func NewApd() *Apd {
 // BroadCastPubKey broadcasts a UDP packet which contains a public key
 // to the local network's broadcast address.
 func (apd *Apd) BroadCastPubKey(broadCastIP string, timer *time.Ticker) {
+	log.Printf("Auto-peering Daemon broadcasting on port %d", apd.Port)
+
 	for {
 		select {
 		case <-timer.C:
-			log.Println("Broadcasting public key...")
+			log.Println("[UDP BROADCAST] Broadcasting public key...")
 			err := BroadCastPubKey(apd.PublicKey, broadCastIP, apd.Port)
 			if err != nil {
 				log.Println(err)
@@ -63,7 +65,7 @@ func (apd *Apd) Listen() {
 	}
 
 	defer conn.Close()
-	log.Printf("Auto-peering Daemon up and running on port %d", apd.Port)
+	log.Printf("Auto-peering Daemon listening on port %d", apd.Port)
 
 	for {
 		buffer := make([]byte, 1024)
