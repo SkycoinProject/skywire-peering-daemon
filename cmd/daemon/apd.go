@@ -6,7 +6,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/SkycoinProject/skycoin/src/cipher"
 	"github.com/SkycoinProject/skywire-peering-daemon/src"
 )
 
@@ -15,9 +14,6 @@ func main() {
 	signal.Notify(shutDownCh, syscall.SIGTERM, syscall.SIGINT)
 
 	apd := src.NewApd()
-	pubKey, _ := cipher.GenerateKeyPair()
-
-	apd.PublicKey = pubKey.Hex()
 
 	// Run the daemon
 	apd.Run()

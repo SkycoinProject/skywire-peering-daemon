@@ -8,9 +8,9 @@ Clone project ```git clone https://github.com/SkycoinProject/skywire-peering-dae
 
 Build binary:
 ```
-cd skywire-peering-daemon/cmd
+cd skywire-peering-daemon/cmd/daemon
 go build
 
 ```
-Run daemon ```./cmd```
+Run daemon ```./daemon```
 The daemon uses the default port 3000 to send broadcasts and listen to incoming broadcasts. 
