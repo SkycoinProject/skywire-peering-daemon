@@ -109,8 +109,10 @@ func (apd *APD) Run() {
 // RegisterPubKey checks if a public key received from a broadcast is already registered.
 // It adds only new public keys to a map.
 func (apd *APD) RegisterPubKey(packet Packet) {
-	if _, ok := apd.PacketMap[packet.PublicKey]; !ok {
-		apd.PacketMap[packet.PublicKey] = packet.IP
-		log.Printf("Received => %s: %s", packet.PublicKey, packet.IP)
+	if apd.PublicKey != packet.PublicKey {
+		if _, ok := apd.PacketMap[packet.PublicKey]; !ok {
+			apd.PacketMap[packet.PublicKey] = packet.IP
+			log.Printf("Received packet %s: %s", packet.PublicKey, packet.IP)
+		}
 	}
 }
