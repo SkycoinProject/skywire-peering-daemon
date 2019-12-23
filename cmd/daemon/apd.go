@@ -1,19 +1,18 @@
 package main
 
 import (
+	apd2 "github.com/SkycoinProject/skywire-peering-daemon/src/apd"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/SkycoinProject/skywire-peering-daemon/src"
 )
 
 func main() {
 	shutDownCh := make(chan os.Signal)
 	signal.Notify(shutDownCh, syscall.SIGTERM, syscall.SIGINT)
 
-	apd := src.NewApd()
+	apd := apd2.NewApd()
 
 	// Run the daemon
 	apd.Run()
