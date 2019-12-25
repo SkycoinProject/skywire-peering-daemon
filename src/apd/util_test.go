@@ -25,7 +25,7 @@ func TestBroadCastPubKey(t *testing.T) {
 			"success",
 			args{
 				publicKey(),
-				defaultBroadCastIP,
+				"255.255.255.255",
 				3000,
 			},
 			false,

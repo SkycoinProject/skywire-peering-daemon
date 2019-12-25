@@ -1,6 +1,10 @@
-language: go   
+language: go
+
 go:
   - "1.12.x"
 
 env:
-  - env GO111MODULE=on
+  - GO111MODULE=on
+
+before_install:
+  - go get -v golang.org/x/lint/golint
