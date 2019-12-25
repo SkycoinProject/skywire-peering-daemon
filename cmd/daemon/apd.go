@@ -1,28 +1,29 @@
 package main
 
 import (
-	apd2 "github.com/SkycoinProject/skywire-peering-daemon/src/apd"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/SkycoinProject/skywire-peering-daemon/src/apd"
 )
 
 func main() {
 	shutDownCh := make(chan os.Signal)
 	signal.Notify(shutDownCh, syscall.SIGTERM, syscall.SIGINT)
 
-	apd := apd2.NewApd()
+	daemon := apd.NewApd()
 
 	// Run the daemon
-	apd.Run()
+	daemon.Run()
 
 	for {
 		select {
-		case <-apd.DoneCh:
+		case <-daemon.DoneCh:
 			os.Exit(1)
-		case packet := <-apd.PacketCh:
-			apd.RegisterPubKey(packet)
+		case packet := <-daemon.PacketCh:
+			daemon.RegisterPubKey(packet)
 		case <-shutDownCh:
 			log.Println("Shutting down daemon")
 			os.Exit(1)
