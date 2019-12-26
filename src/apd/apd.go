@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/SkycoinProject/skycoin/src/cipher"
@@ -99,11 +102,26 @@ func (apd *APD) Listen(port int) {
 func (apd *APD) Run() {
 	t := time.NewTicker(10 * time.Second)
 
+	shutDownCh := make(chan os.Signal)
+	signal.Notify(shutDownCh, syscall.SIGTERM, syscall.SIGINT)
+
 	// send broadcasts at ten minute intervals
 	go apd.BroadCastPubKey(defaultBroadCastIP, t, port)
 
 	// listen for incoming broadcasts
 	go apd.Listen(port)
+
+	for {
+		select {
+		case <-apd.DoneCh:
+			os.Exit(1)
+		case packet := <-apd.PacketCh:
+			apd.RegisterPubKey(packet)
+		case <-shutDownCh:
+			log.Println("Shutting down daemon")
+			os.Exit(1)
+		}
+	}
 }
 
 // RegisterPubKey checks if a public key received from a broadcast is already registered.
