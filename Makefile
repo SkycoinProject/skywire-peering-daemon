@@ -1,0 +1,3 @@
+test: ## run tests
+	- go clean -testcache
+	${OPTS} go test ${TEST_OPTS} ./src/...

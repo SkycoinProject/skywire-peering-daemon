@@ -6,5 +6,5 @@ go:
 env:
   - GO111MODULE=on
 
-before_install:
-  - go get -v golang.org/x/lint/golint
+script:
+  - make test
