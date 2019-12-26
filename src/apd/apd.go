@@ -49,7 +49,7 @@ func NewApd() *APD {
 func (apd *APD) BroadCastPubKey(broadCastIP string, timer *time.Ticker, port int) {
 	log.Printf("Auto-peering Daemon broadcasting on address %s:%d", defaultBroadCastIP, port)
 
-	for _ = range timer.C {
+	for range timer.C {
 		log.Println("[UDP BROADCAST] Broadcasting public key")
 		err := BroadCastPubKey(apd.PublicKey, broadCastIP, port)
 		if err != nil {
