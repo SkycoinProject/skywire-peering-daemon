@@ -32,8 +32,7 @@ type APD struct {
 }
 
 // NewApd returns an Apd type
-func NewApd(pubKey string) *APD {
-	masterLogger := logging.NewMasterLogger()
+func NewApd(pubKey string, masterLogger *logging.MasterLogger) *APD {
 	logger := masterLogger.PackageLogger("auto-peering-daemon")
 
 	return &APD{
@@ -49,9 +48,9 @@ func NewApd(pubKey string) *APD {
 // BroadCastPubKey broadcasts a UDP packet which contains a public key
 // to the local network's broadcast address.
 func (apd *APD) BroadCastPubKey(broadCastIP string, timer *time.Ticker, port int) {
-	apd.logger.Infof("Auto-peering Daemon broadcasting on address %s:%d", defaultBroadCastIP, port)
+	apd.logger.Infof("broadcasting on address %s:%d", defaultBroadCastIP, port)
 	for range timer.C {
-		apd.logger.Infof("[UDP BROADCAST] Broadcasting public key")
+		apd.logger.Infof("[UDP BROADCAST] broadcasting public key")
 		err := BroadCastPubKey(apd.PublicKey, broadCastIP, port)
 		if err != nil {
 			apd.logger.Error(err)
@@ -79,7 +78,7 @@ func (apd *APD) Listen(port int) {
 	}
 
 	defer conn.Close()
-	apd.logger.Infof("Auto-peering Daemon listening on address %s", address)
+	apd.logger.Infof("listening on address %s", address)
 
 	for {
 		buffer := make([]byte, 1024)
