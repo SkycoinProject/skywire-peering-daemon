@@ -107,6 +107,8 @@ func (apd *APD) Run() {
 	shutDownCh := make(chan os.Signal)
 	signal.Notify(shutDownCh, syscall.SIGTERM, syscall.SIGINT)
 
+	apd.logger.Info("Auto-peering-daemon started")
+
 	// send broadcasts at ten minute intervals
 	go apd.BroadCastPubKey(defaultBroadCastIP, t, port)
 
