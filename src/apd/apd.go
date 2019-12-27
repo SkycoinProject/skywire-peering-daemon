@@ -2,12 +2,13 @@ package apd
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/SkycoinProject/skycoin/src/util/logging"
 )
 
 const (
@@ -27,29 +28,30 @@ type APD struct {
 	PacketMap map[string]string
 	DoneCh    chan error
 	PacketCh  chan Packet
+	logger    *logging.Logger
 }
 
 // NewApd returns an Apd type
-func NewApd(pubKey string) *APD {
+func NewApd(pubKey string, logger *logging.Logger) *APD {
 	return &APD{
 		PublicKey: pubKey,
 		LocalIP:   getLocalIP(),
 		PacketMap: make(map[string]string),
 		DoneCh:    make(chan error),
 		PacketCh:  make(chan Packet, packetLength),
+		logger:    logger,
 	}
 }
 
 // BroadCastPubKey broadcasts a UDP packet which contains a public key
 // to the local network's broadcast address.
 func (apd *APD) BroadCastPubKey(broadCastIP string, timer *time.Ticker, port int) {
-	log.Printf("Auto-peering Daemon broadcasting on address %s:%d", defaultBroadCastIP, port)
-
+	apd.logger.Infof("Auto-peering Daemon broadcasting on address %s:%d", defaultBroadCastIP, port)
 	for range timer.C {
-		log.Println("[UDP BROADCAST] Broadcasting public key")
+		apd.logger.Infof("[UDP BROADCAST] Broadcasting public key")
 		err := BroadCastPubKey(apd.PublicKey, broadCastIP, port)
 		if err != nil {
-			log.Println(err)
+			apd.logger.Error(err)
 			apd.DoneCh <- err
 			return
 		}
@@ -61,24 +63,26 @@ func (apd *APD) Listen(port int) {
 	address := fmt.Sprintf(":%d", port)
 	udpAddr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
+		apd.logger.Error(err)
 		apd.DoneCh <- err
 		return
 	}
 
 	conn, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
+		apd.logger.Error(err)
 		apd.DoneCh <- err
 		return
 	}
 
 	defer conn.Close()
-	log.Printf("Auto-peering Daemon listening on address %s", address)
+	apd.logger.Infof("Auto-peering Daemon listening on address %s", address)
 
 	for {
 		buffer := make([]byte, 1024)
 		n, addr, err := conn.ReadFromUDP(buffer)
 		if err != nil {
-			log.Println(err)
+			apd.logger.Error(err)
 			apd.DoneCh <- err
 			return
 		}
@@ -110,11 +114,12 @@ func (apd *APD) Run() {
 	for {
 		select {
 		case <-apd.DoneCh:
+			apd.logger.Fatal("Shutting down daemon")
 			os.Exit(1)
 		case packet := <-apd.PacketCh:
 			apd.RegisterPubKey(packet)
 		case <-shutDownCh:
-			log.Println("Shutting down daemon")
+			apd.logger.Print("Shutting down daemon")
 			os.Exit(1)
 		}
 	}
@@ -126,7 +131,7 @@ func (apd *APD) RegisterPubKey(packet Packet) {
 	if apd.PublicKey != packet.PublicKey {
 		if _, ok := apd.PacketMap[packet.PublicKey]; !ok {
 			apd.PacketMap[packet.PublicKey] = packet.IP
-			log.Printf("Received packet %s: %s", packet.PublicKey, packet.IP)
+			apd.logger.Infof("Received packet %s: %s", packet.PublicKey, packet.IP)
 		}
 	}
 }
