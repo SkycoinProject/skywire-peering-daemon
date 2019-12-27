@@ -8,8 +8,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/SkycoinProject/skycoin/src/cipher"
 )
 
 const (
@@ -32,11 +30,9 @@ type APD struct {
 }
 
 // NewApd returns an Apd type
-func NewApd() *APD {
-	pubKey, _ := cipher.GenerateKeyPair()
-
+func NewApd(pubKey string) *APD {
 	return &APD{
-		PublicKey: pubKey.Hex(),
+		PublicKey: pubKey,
 		LocalIP:   getLocalIP(),
 		PacketMap: make(map[string]string),
 		DoneCh:    make(chan error),
