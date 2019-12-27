@@ -32,7 +32,10 @@ type APD struct {
 }
 
 // NewApd returns an Apd type
-func NewApd(pubKey string, logger *logging.Logger) *APD {
+func NewApd(pubKey string) *APD {
+	masterLogger := logging.NewMasterLogger()
+	logger := masterLogger.PackageLogger("auto-peering-daemon")
+
 	return &APD{
 		PublicKey: pubKey,
 		LocalIP:   getLocalIP(),

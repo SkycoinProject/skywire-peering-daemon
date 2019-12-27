@@ -9,7 +9,7 @@ import (
 
 var logger = func() *logging.Logger {
 	masterLogger := logging.NewMasterLogger()
-	return masterLogger.PackageLogger("auto-peering-daemon")
+	return masterLogger.PackageLogger("apd.broadcast")
 }
 
 // BroadCastPubKey broadcasts a UDP packet containing the public key of the local visor.
