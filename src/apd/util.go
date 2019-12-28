@@ -7,10 +7,12 @@ import (
 	"github.com/SkycoinProject/skycoin/src/util/logging"
 )
 
-var logger = func() *logging.Logger {
+var logger = func(moduleName string) *logging.Logger {
 	masterLogger := logging.NewMasterLogger()
-	return masterLogger.PackageLogger("apd.broadcast")
+	return masterLogger.PackageLogger(moduleName)
 }
+
+const moduleName = "apd.broadcast"
 
 // BroadCastPubKey broadcasts a UDP packet containing the public key of the local visor.
 // Broadcasts is sent on the local network broadcasts address.
@@ -18,7 +20,7 @@ func BroadCastPubKey(pubkey, broadCastIP string, port int) error {
 	address := fmt.Sprintf("%s:%d", broadCastIP, port)
 	bAddr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
-		logger().Errorf("Couldn't resolve broadcast address: %v", err)
+		logger(moduleName).Errorf("Couldn't resolve broadcast address: %v", err)
 		return err
 	}
 
@@ -42,7 +44,7 @@ func getLocalIP() string {
 	var localIP string
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		logger().Errorf("Couldn't get device unicast addresses: %v", err)
+		logger(moduleName).Errorf("Couldn't get device unicast addresses: %v", err)
 		return ""
 	}
 	for _, a := range addrs {
