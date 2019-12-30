@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net"
+	"os"
 
 	"github.com/SkycoinProject/skycoin/src/util/logging"
 )
@@ -59,13 +60,37 @@ func getLocalIP() string {
 	return localIP
 }
 
-func Deserialize(data []byte) (*Packet, error) {
+func Deserialize(data []byte) (Packet, error) {
 	var packet Packet
 	decoder := gob.NewDecoder(bytes.NewReader(data))
 	err := decoder.Decode(&packet)
 	if err != nil {
+		return Packet{}, err
+	}
+
+	return packet, nil
+}
+
+func serialize(packet Packet) ([]byte, error) {
+	var buff bytes.Buffer
+	decoder := gob.NewEncoder(&buff)
+	err := decoder.Encode(packet)
+	if err != nil {
 		return nil, err
 	}
 
-	return &packet, nil
+	return buff.Bytes(), nil
+}
+
+func write(data []byte, filePath string) error {
+	logger(moduleName).Info("Sending packet over pipe")
+	stdOut, err := os.OpenFile(filePath, os.O_RDWR, 0600)
+	if err != nil {
+		return err
+	}
+
+	stdOut.Write(data)
+	stdOut.Close()
+
+	return nil
 }

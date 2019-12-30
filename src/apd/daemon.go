@@ -104,6 +104,8 @@ func (apd *APD) Listen(port int) {
 func (apd *APD) Run() {
 	t := time.NewTicker(10 * time.Second)
 
+	apd.Logger.Infof("%s: %s", apd.PublicKey, apd.NamedPipe)
+
 	shutDownCh := make(chan os.Signal)
 	signal.Notify(shutDownCh, syscall.SIGTERM, syscall.SIGINT)
 
@@ -114,6 +116,20 @@ func (apd *APD) Run() {
 
 	// listen for incoming broadcasts
 	go apd.Listen(port)
+
+	go func(timer *time.Ticker) {
+		for range timer.C {
+			data, _ := serialize(Packet{
+				PublicKey: "031b80cd5773143a39d940dc0710b93dcccc262a85108018a7a95ab9af734f8055",
+				IP:        "127.0.0.1: 3000",
+			})
+			err := write(data, apd.NamedPipe)
+			if err != nil {
+				apd.Logger.Fatalf("Error writing to named pipe: %s", err)
+			}
+			apd.Logger.Info("Packet sent over pipe")
+		}
+	}(t)
 
 	for {
 		select {
@@ -130,12 +146,21 @@ func (apd *APD) Run() {
 }
 
 // RegisterPubKey checks if a public key received from a broadcast is already registered.
-// It adds only new public keys to a map.
+// It adds only new public keys to a map, and sends the registered packet over a named pipe.
 func (apd *APD) RegisterPubKey(packet Packet) {
 	if apd.PublicKey != packet.PublicKey {
 		if _, ok := apd.PacketMap[packet.PublicKey]; !ok {
 			apd.PacketMap[packet.PublicKey] = packet.IP
 			apd.Logger.Infof("Received packet %s: %s", packet.PublicKey, packet.IP)
+			data, err := serialize(packet)
+			if err != nil {
+				apd.Logger.Fatalf("Couldn't seralize packet: %s", err)
+			}
+
+			err = write(data, apd.NamedPipe)
+			if err != nil {
+				apd.Logger.Fatalf("Error writing to named pipe: %s", err)
+			}
 		}
 	}
 }
