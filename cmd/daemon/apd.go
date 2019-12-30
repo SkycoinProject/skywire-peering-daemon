@@ -1,13 +1,21 @@
 package main
 
 import (
-	"github.com/SkycoinProject/skycoin/src/cipher"
+	"flag"
+
 	"github.com/SkycoinProject/skywire-peering-daemon/src/apd"
 )
 
+var (
+	pubKey string
+)
+
 func main() {
-	pubKey, _ := cipher.GenerateKeyPair()
-	daemon := apd.NewApd(pubKey.Hex())
+	flag.Parse()
+	pubKey := flag.Args()[0]
+	namedPipe := flag.Args()[1]
+	daemon := apd.NewApd(pubKey, namedPipe)
+	daemon.Logger.Infof("$s: %s", pubKey, namedPipe)
 
 	// Run the daemon
 	daemon.Run()

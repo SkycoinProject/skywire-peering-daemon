@@ -28,30 +28,32 @@ type APD struct {
 	PacketMap map[string]string
 	DoneCh    chan error
 	PacketCh  chan Packet
-	logger    *logging.Logger
+	Logger    *logging.Logger
+	NamedPipe string
 }
 
 // NewApd returns an Apd type
-func NewApd(pubKey string) *APD {
+func NewApd(pubKey, namedPipe string) *APD {
 	return &APD{
 		PublicKey: pubKey,
 		LocalIP:   getLocalIP(),
 		PacketMap: make(map[string]string),
 		DoneCh:    make(chan error),
 		PacketCh:  make(chan Packet, packetLength),
-		logger:    logger("auto-peering-daemon"),
+		Logger:    logger("APD"),
+		NamedPipe: namedPipe,
 	}
 }
 
 // BroadCastPubKey broadcasts a UDP packet which contains a public key
 // to the local network's broadcast address.
 func (apd *APD) BroadCastPubKey(broadCastIP string, timer *time.Ticker, port int) {
-	apd.logger.Infof("broadcasting on address %s:%d", defaultBroadCastIP, port)
+	apd.Logger.Infof("broadcasting on address %s:%d", defaultBroadCastIP, port)
 	for range timer.C {
-		apd.logger.Infof("[UDP BROADCAST] broadcasting public key")
+		apd.Logger.Infof("broadcasting public key")
 		err := BroadCastPubKey(apd.PublicKey, broadCastIP, port)
 		if err != nil {
-			apd.logger.Error(err)
+			apd.Logger.Error(err)
 			apd.DoneCh <- err
 			return
 		}
@@ -63,26 +65,26 @@ func (apd *APD) Listen(port int) {
 	address := fmt.Sprintf(":%d", port)
 	udpAddr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
-		apd.logger.Error(err)
+		apd.Logger.Error(err)
 		apd.DoneCh <- err
 		return
 	}
 
 	conn, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
-		apd.logger.Error(err)
+		apd.Logger.Error(err)
 		apd.DoneCh <- err
 		return
 	}
 
 	defer conn.Close()
-	apd.logger.Infof("listening on address %s", address)
+	apd.Logger.Infof("listening on address %s", address)
 
 	for {
 		buffer := make([]byte, 1024)
 		n, addr, err := conn.ReadFromUDP(buffer)
 		if err != nil {
-			apd.logger.Error(err)
+			apd.Logger.Error(err)
 			apd.DoneCh <- err
 			return
 		}
@@ -105,7 +107,7 @@ func (apd *APD) Run() {
 	shutDownCh := make(chan os.Signal)
 	signal.Notify(shutDownCh, syscall.SIGTERM, syscall.SIGINT)
 
-	apd.logger.Info("Auto-peering-daemon started")
+	apd.Logger.Info("Auto-peering-daemon started")
 
 	// send broadcasts at ten minute intervals
 	go apd.BroadCastPubKey(defaultBroadCastIP, t, port)
@@ -116,12 +118,12 @@ func (apd *APD) Run() {
 	for {
 		select {
 		case <-apd.DoneCh:
-			apd.logger.Fatal("Shutting down daemon")
+			apd.Logger.Fatal("Shutting down daemon")
 			os.Exit(1)
 		case packet := <-apd.PacketCh:
 			apd.RegisterPubKey(packet)
 		case <-shutDownCh:
-			apd.logger.Print("Shutting down daemon")
+			apd.Logger.Print("Shutting down daemon")
 			os.Exit(1)
 		}
 	}
@@ -133,7 +135,7 @@ func (apd *APD) RegisterPubKey(packet Packet) {
 	if apd.PublicKey != packet.PublicKey {
 		if _, ok := apd.PacketMap[packet.PublicKey]; !ok {
 			apd.PacketMap[packet.PublicKey] = packet.IP
-			apd.logger.Infof("Received packet %s: %s", packet.PublicKey, packet.IP)
+			apd.Logger.Infof("Received packet %s: %s", packet.PublicKey, packet.IP)
 		}
 	}
 }

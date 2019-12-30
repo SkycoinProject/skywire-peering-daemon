@@ -1,6 +1,8 @@
 package apd
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"net"
 
@@ -55,4 +57,15 @@ func getLocalIP() string {
 		}
 	}
 	return localIP
+}
+
+func Deserialize(data []byte) (*Packet, error) {
+	var packet Packet
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+	err := decoder.Decode(&packet)
+	if err != nil {
+		return nil, err
+	}
+
+	return &packet, nil
 }
