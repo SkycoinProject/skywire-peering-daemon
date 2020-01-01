@@ -15,7 +15,6 @@ func main() {
 	pubKey := flag.Args()[0]
 	namedPipe := flag.Args()[1]
 	daemon := apd.NewApd(pubKey, namedPipe)
-	daemon.Logger.Infof("$s: %s", pubKey, namedPipe)
 
 	// Run the daemon
 	daemon.Run()
