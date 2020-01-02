@@ -1,0 +1,22 @@
+# github.com/SkycoinProject/skycoin v0.27.0
+github.com/SkycoinProject/skycoin/src/cipher
+github.com/SkycoinProject/skycoin/src/cipher/base58
+github.com/SkycoinProject/skycoin/src/cipher/ripemd160
+github.com/SkycoinProject/skycoin/src/cipher/secp256k1-go
+github.com/SkycoinProject/skycoin/src/cipher/secp256k1-go/secp256k1-go2
+github.com/SkycoinProject/skycoin/src/util/logging
+# github.com/konsorten/go-windows-terminal-sequences v1.0.1
+github.com/konsorten/go-windows-terminal-sequences
+# github.com/mattn/go-colorable v0.1.4
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.8
+github.com/mattn/go-isatty
+# github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
+github.com/mgutz/ansi
+# github.com/sirupsen/logrus v1.4.2
+github.com/sirupsen/logrus
+# golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876
+golang.org/x/crypto/ssh/terminal
+# golang.org/x/sys v0.0.0-20190422165155-953cdadca894
+golang.org/x/sys/unix
+golang.org/x/sys/windows

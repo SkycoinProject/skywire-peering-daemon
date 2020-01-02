@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	apd "github.com/SkycoinProject/skywire-peering-daemon/src/daemon"
+	"github.com/SkycoinProject/skywire-peering-daemon/src/apd"
 )
 
 func main() {
