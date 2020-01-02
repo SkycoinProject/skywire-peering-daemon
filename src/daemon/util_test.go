@@ -32,6 +32,7 @@ func TestBroadCastPubKey(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			err := BroadCastPubKey(tt.args.PublicKey, tt.args.BroadCastIP, tt.args.Port)
 			if (err != nil) != tt.wantErr {

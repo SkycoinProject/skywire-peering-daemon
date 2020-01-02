@@ -1,4 +1,4 @@
-	package apd
+package apd
 
 import (
 	"bytes"
@@ -43,17 +43,6 @@ func BroadCastPubKey(pubkey, broadCastIP string, port int) error {
 	return nil
 }
 
-func Deserialize(data []byte) (Packet, error) {
-	var packet Packet
-	decoder := gob.NewDecoder(bytes.NewReader(data))
-	err := decoder.Decode(&packet)
-	if err != nil {
-		return Packet{}, err
-	}
-
-	return packet, nil
-}
-
 func serialize(packet Packet) ([]byte, error) {
 	var buff bytes.Buffer
 	decoder := gob.NewEncoder(&buff)
@@ -72,8 +61,15 @@ func write(data []byte, filePath string) error {
 		return err
 	}
 
-	stdOut.Write(data)
-	stdOut.Close()
+	_, err = stdOut.Write(data)
+	if err != nil {
+		logger(moduleName).Fatal(err)
+	}
+
+	err = stdOut.Close()
+	if err != nil {
+		logger(moduleName).Fatal(err)
+	}
 
 	return nil
 }

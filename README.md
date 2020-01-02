@@ -1,6 +1,6 @@
 # skywire-peering-daemon
 
-##### skywire-peering-daemon is a [Skywire](https://github.com/SkycoinProject/skywire) daemon running functionality
+##### skywire-peering-daemon is a [Skywire](https://github.com/SkycoinProject/skywire-mainnet) daemon running functionality
 
 ## Build and run
 
@@ -12,7 +12,7 @@
 
 ```
 # Clone.
-$ git clone git clone https://github.com/SkycoinProject/skywire-peering-daemon.git
+$ git clone git https://github.com/SkycoinProject/skywire-peering-daemon.git
 $ cd skywire-peering-daemon
 
 # Build

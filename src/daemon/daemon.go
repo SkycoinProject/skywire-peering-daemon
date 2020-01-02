@@ -31,7 +31,7 @@ type Daemon struct {
 	NamedPipe string
 }
 
-// NewApd returns an Apd type
+// NewDaemon returns a Daemon type
 func NewDaemon(pubKey, namedPipe string) *Daemon {
 	return &Daemon{
 		PublicKey: pubKey,
@@ -102,7 +102,7 @@ func (d *Daemon) Listen(port int) {
 func (d *Daemon) Run() {
 	t := time.NewTicker(10 * time.Second)
 
-	shutDownCh := make(chan os.Signal)
+	shutDownCh := make(chan os.Signal, 1)
 	signal.Notify(shutDownCh, syscall.SIGTERM, syscall.SIGINT)
 
 	d.Logger.Info("Skywire-peering-daemon started")
@@ -136,7 +136,7 @@ func (d *Daemon) RegisterPubKey(packet Packet) {
 			d.Logger.Infof("Received packet %s: %s", packet.PublicKey, packet.IP)
 			data, err := serialize(packet)
 			if err != nil {
-				d.Logger.Fatalf("Couldn't seralize packet: %s", err)
+				d.Logger.Fatalf("Couldn't serialize packet: %s", err)
 			}
 
 			err = write(data, d.NamedPipe)

@@ -1,6 +1,6 @@
 module github.com/SkycoinProject/skywire-peering-daemon
 
-go 1.13
+go 1.12
 
 require (
 	github.com/SkycoinProject/skycoin v0.27.0
