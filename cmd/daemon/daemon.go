@@ -9,13 +9,14 @@ import (
 
 func main() {
 	flag.Parse()
-	if len(flag.Args()) < 2 {
-		log.Fatalf("Invalid number of arguments: found %d - requires 2", len(flag.Args()))
+	if len(flag.Args()) < 3 {
+		log.Fatalf("Invalid number of arguments: found %d - requires 3", len(flag.Args()))
 	}
 
 	pubKey := flag.Args()[0]
-	namedPipe := flag.Args()[1]
-	daemon := spd.NewDaemon(pubKey, namedPipe)
+	remoteAddress := flag.Args()[1]
+	namedPipe := flag.Args()[2]
+	daemon := spd.NewDaemon(pubKey, remoteAddress, namedPipe)
 
 	// Run the daemon
 	daemon.Run()

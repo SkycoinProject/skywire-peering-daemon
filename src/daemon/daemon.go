@@ -23,33 +23,35 @@ type Packet struct {
 }
 
 type Daemon struct {
-	PublicKey string
-	PacketMap map[string]string
-	DoneCh    chan error
-	PacketCh  chan Packet
-	Logger    *logging.Logger
-	NamedPipe string
+	PublicKey  string
+	RemoteAddr string
+	PacketMap  map[string]string
+	DoneCh     chan error
+	PacketCh   chan []byte
+	Logger     *logging.Logger
+	NamedPipe  string
 }
 
 // NewDaemon returns a Daemon type
-func NewDaemon(pubKey, namedPipe string) *Daemon {
+func NewDaemon(pubKey, rAddr, namedPipe string) *Daemon {
 	return &Daemon{
-		PublicKey: pubKey,
-		PacketMap: make(map[string]string),
-		DoneCh:    make(chan error),
-		PacketCh:  make(chan Packet, packetLength),
-		Logger:    logger("SPD"),
-		NamedPipe: namedPipe,
+		PublicKey:  pubKey,
+		RemoteAddr: rAddr,
+		PacketMap:  make(map[string]string),
+		DoneCh:     make(chan error),
+		PacketCh:   make(chan []byte, packetLength),
+		Logger:     logger("SPD"),
+		NamedPipe:  namedPipe,
 	}
 }
 
-// BroadCastPubKey broadcasts a UDP packet which contains a public key
+// BroadCastPacket broadcasts a UDP packet which contains a public key
 // to the local network's broadcast address.
-func (d *Daemon) BroadCastPubKey(broadCastIP string, timer *time.Ticker, port int) {
+func (d *Daemon) BroadCastPacket(broadCastIP string, timer *time.Ticker, port int, data []byte) {
 	d.Logger.Infof("broadcasting on address %s:%d", defaultBroadCastIP, port)
 	for range timer.C {
 		d.Logger.Infof("broadcasting public key")
-		err := BroadCastPubKey(d.PublicKey, broadCastIP, port)
+		err := BroadCast(broadCastIP, port, data)
 		if err != nil {
 			d.Logger.Error(err)
 			d.DoneCh <- err
@@ -80,19 +82,14 @@ func (d *Daemon) Listen(port int) {
 
 	for {
 		buffer := make([]byte, 1024)
-		n, addr, err := conn.ReadFromUDP(buffer)
+		n, _, err := conn.ReadFromUDP(buffer)
 		if err != nil {
 			d.Logger.Error(err)
 			d.DoneCh <- err
 			return
 		}
 
-		message := Packet{
-			PublicKey: string(buffer[:n]),
-			IP:        addr.String(),
-		}
-
-		d.PacketCh <- message
+		d.PacketCh <- buffer[:n]
 	}
 }
 
@@ -107,8 +104,17 @@ func (d *Daemon) Run() {
 
 	d.Logger.Info("Skywire-peering-daemon started")
 
+	packet := Packet{
+		PublicKey: d.PublicKey,
+		IP:        d.RemoteAddr,
+	}
+	data, err := serialize(packet)
+	if err != nil {
+		d.Logger.Fatal(err)
+	}
+
 	// send broadcasts at ten minute intervals
-	go d.BroadCastPubKey(defaultBroadCastIP, t, port)
+	go d.BroadCastPacket(defaultBroadCastIP, t, port, data)
 
 	// listen for incoming broadcasts
 	go d.Listen(port)
@@ -119,7 +125,7 @@ func (d *Daemon) Run() {
 			d.Logger.Fatal("Shutting down daemon")
 			os.Exit(1)
 		case packet := <-d.PacketCh:
-			d.RegisterPubKey(packet)
+			d.RegisterPacket(packet)
 		case <-shutDownCh:
 			d.Logger.Print("Shutting down daemon")
 			os.Exit(1)
@@ -127,9 +133,14 @@ func (d *Daemon) Run() {
 	}
 }
 
-// RegisterPubKey checks if a public key received from a broadcast is already registered.
+// RegisterPacket checks if a public key received from a broadcast is already registered.
 // It adds only new public keys to a map, and sends the registered packet over a named pipe.
-func (d *Daemon) RegisterPubKey(packet Packet) {
+func (d *Daemon) RegisterPacket(data []byte) {
+	packet, err := Deserialize(data)
+	if err != nil {
+		d.Logger.Fatal(err)
+	}
+
 	if d.PublicKey != packet.PublicKey {
 		if _, ok := d.PacketMap[packet.PublicKey]; !ok {
 			d.PacketMap[packet.PublicKey] = packet.IP

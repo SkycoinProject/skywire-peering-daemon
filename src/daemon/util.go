@@ -17,9 +17,9 @@ var logger = func(moduleName string) *logging.Logger {
 
 const moduleName = "apd.broadcast"
 
-// BroadCastPubKey broadcasts a UDP packet containing the public key of the local visor.
+// BroadCast broadcasts a UDP packet containing the public key of the local visor.
 // Broadcasts is sent on the local network broadcasts address.
-func BroadCastPubKey(pubkey, broadCastIP string, port int) error {
+func BroadCast(broadCastIP string, port int, data []byte) error {
 	address := fmt.Sprintf("%s:%d", broadCastIP, port)
 	bAddr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
@@ -34,8 +34,7 @@ func BroadCastPubKey(pubkey, broadCastIP string, port int) error {
 
 	defer conn.Close()
 
-	packet := []byte(pubkey)
-	_, err = conn.Write(packet)
+	_, err = conn.Write(data)
 	if err != nil {
 		return err
 	}
@@ -72,4 +71,15 @@ func write(data []byte, filePath string) error {
 	}
 
 	return nil
+}
+
+func Deserialize(data []byte) (Packet, error) {
+	var packet Packet
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+	err := decoder.Decode(&packet)
+	if err != nil {
+		return Packet{}, err
+	}
+
+	return packet, nil
 }
