@@ -5,4 +5,5 @@
 *.so
 *.dylib
 
-.idea
+.idea/
+.vendor/
