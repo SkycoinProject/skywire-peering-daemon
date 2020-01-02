@@ -102,8 +102,6 @@ func (d *Daemon) Listen(port int) {
 func (d *Daemon) Run() {
 	t := time.NewTicker(10 * time.Second)
 
-	d.Logger.Infof("%s: %s", d.PublicKey, d.NamedPipe)
-
 	shutDownCh := make(chan os.Signal)
 	signal.Notify(shutDownCh, syscall.SIGTERM, syscall.SIGINT)
 
@@ -114,20 +112,6 @@ func (d *Daemon) Run() {
 
 	// listen for incoming broadcasts
 	go d.Listen(port)
-
-	go func(timer *time.Ticker) {
-		for range timer.C {
-			data, _ := serialize(Packet{
-				PublicKey: "031b80cd5773143a39d940dc0710b93dcccc262a85108018a7a95ab9af734f8055",
-				IP:        "127.0.0.1:3000",
-			})
-			err := write(data, d.NamedPipe)
-			if err != nil {
-				d.Logger.Fatalf("Error writing to named pipe: %s", err)
-			}
-			d.Logger.Info("Packet sent over pipe")
-		}
-	}(t)
 
 	for {
 		select {
