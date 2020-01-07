@@ -10,7 +10,7 @@ import (
 func main() {
 	flag.Parse()
 	if len(flag.Args()) < 3 {
-		log.Fatalf("Invalid number of arguments: found %d - requires 3", len(flag.Args()))
+		log.Fatalf("Invalid number of arguments: found %d - requires:\n\n [publickey] [remote address] [named pipe]", len(flag.Args()))
 	}
 
 	pubKey := flag.Args()[0]

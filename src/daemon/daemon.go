@@ -20,6 +20,7 @@ const (
 type Packet struct {
 	PublicKey string
 	IP        string
+	T         int64
 }
 
 type Daemon struct {
@@ -90,6 +91,7 @@ func (d *Daemon) Listen(port int) {
 		}
 
 		d.PacketCh <- buffer[:n]
+		d.Logger.Infof("Packets received: %s", string(buffer[:n]))
 	}
 }
 
@@ -140,6 +142,7 @@ func (d *Daemon) RegisterPacket(data []byte) {
 	if err != nil {
 		d.Logger.Fatal(err)
 	}
+	packet.T = time.Now().Unix()
 
 	if d.PublicKey != packet.PublicKey {
 		if _, ok := d.PacketMap[packet.PublicKey]; !ok {
