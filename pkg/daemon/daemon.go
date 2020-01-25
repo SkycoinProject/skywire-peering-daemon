@@ -91,7 +91,7 @@ func (d *Daemon) Listen(port int) {
 
 		data := buffer[:n]
 		if !verifyPacket(d.PublicKey, data) {
-			d.Logger.Infof("Packets received: %s", string(buffer[:n]))
+			d.Logger.Info("Packets received")
 			d.PacketCh <- data
 		}
 	}
@@ -121,18 +121,6 @@ func (d *Daemon) Run() {
 
 	// listen for incoming broadcasts
 	go d.Listen(port)
-
-	go func() {
-		packet = Packet{
-			PublicKey: "031b80cd5773143a39d940dc0710b93dcccc262a85108018a7a95ab9af734f8055",
-			IP: "127.0.0.1:9498",
-		}
-		d.Logger.Info("SLEEPING")
-		time.Sleep(10*time.Second)
-		d.Logger.Info("AWAKE...")
-		b, _ := serialize(packet)
-		write(b, d.NamedPipe)
-	}()
 
 	for {
 		select {
