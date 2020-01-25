@@ -15,7 +15,7 @@ var logger = func(moduleName string) *logging.Logger {
 	return masterLogger.PackageLogger(moduleName)
 }
 
-const moduleName = "apd.broadcast"
+const moduleName = "SPD"
 
 // BroadCast broadcasts a UDP packet containing the public key of the local visor.
 // Broadcasts is sent on the local network broadcasts address.

@@ -145,7 +145,7 @@ func (d *Daemon) RegisterPacket(data []byte) {
 	packet.T = time.Now().Unix()
 
 	if d.PublicKey != packet.PublicKey {
-		if _, ok := d.PacketMap[packet.PublicKey]; !ok {
+		if d.PacketMap[packet.PublicKey] == "" {
 			d.PacketMap[packet.PublicKey] = packet.IP
 			d.Logger.Infof("Received packet %s: %s", packet.PublicKey, packet.IP)
 			data, err := serialize(packet)
