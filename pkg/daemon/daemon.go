@@ -24,34 +24,33 @@ type Packet struct {
 }
 
 type Daemon struct {
-	PublicKey  string
-	RemoteAddr string
-	PacketMap  map[string]string
-	DoneCh     chan error
-	PacketCh   chan []byte
-	Logger     *logging.Logger
-	NamedPipe  string
+	PublicKey string
+	localAddr string
+	PacketMap map[string]string
+	DoneCh    chan error
+	PacketCh  chan []byte
+	Logger    *logging.Logger
+	NamedPipe string
 }
 
 // NewDaemon returns a Daemon type
 func NewDaemon(pubKey, rAddr, namedPipe string) *Daemon {
 	return &Daemon{
-		PublicKey:  pubKey,
-		RemoteAddr: rAddr,
-		PacketMap:  make(map[string]string),
-		DoneCh:     make(chan error),
-		PacketCh:   make(chan []byte, packetLength),
-		Logger:     logger("SPD"),
-		NamedPipe:  namedPipe,
+		PublicKey: pubKey,
+		localAddr: rAddr,
+		PacketMap: make(map[string]string),
+		DoneCh:    make(chan error),
+		PacketCh:  make(chan []byte, packetLength),
+		Logger:    logger("SPD"),
+		NamedPipe: namedPipe,
 	}
 }
 
 // BroadCastPacket broadcasts a UDP packet which contains a public key
 // to the local network's broadcast address.
 func (d *Daemon) BroadCastPacket(broadCastIP string, timer *time.Ticker, port int, data []byte) {
-	d.Logger.Infof("broadcasting on address %s:%d", defaultBroadCastIP, port)
+	d.Logger.Infof("broadcasting packet on address %s:%d", defaultBroadCastIP, port)
 	for range timer.C {
-		d.Logger.Infof("broadcasting public key")
 		err := BroadCast(broadCastIP, port, data)
 		if err != nil {
 			d.Logger.Error(err)
@@ -90,8 +89,11 @@ func (d *Daemon) Listen(port int) {
 			return
 		}
 
-		d.PacketCh <- buffer[:n]
-		d.Logger.Infof("Packets received: %s", string(buffer[:n]))
+		data := buffer[:n]
+		if !verifyPacket(d.PublicKey, data) {
+			d.Logger.Infof("Packets received: %s", string(buffer[:n]))
+			d.PacketCh <- data
+		}
 	}
 }
 
@@ -99,16 +101,15 @@ func (d *Daemon) Listen(port int) {
 // The daemon broadcasts a public key in a goroutine, and listens
 // for incoming broadcasts in another goroutine.
 func (d *Daemon) Run() {
+	d.Logger.Info("Skywire-peering-daemon started")
 	t := time.NewTicker(10 * time.Second)
 
 	shutDownCh := make(chan os.Signal, 1)
 	signal.Notify(shutDownCh, syscall.SIGTERM, syscall.SIGINT)
 
-	d.Logger.Info("Skywire-peering-daemon started")
-
 	packet := Packet{
 		PublicKey: d.PublicKey,
-		IP:        d.RemoteAddr,
+		IP:        d.localAddr,
 	}
 	data, err := serialize(packet)
 	if err != nil {
@@ -120,6 +121,18 @@ func (d *Daemon) Run() {
 
 	// listen for incoming broadcasts
 	go d.Listen(port)
+
+	go func() {
+		packet = Packet{
+			PublicKey: "031b80cd5773143a39d940dc0710b93dcccc262a85108018a7a95ab9af734f8055",
+			IP: "127.0.0.1:9498",
+		}
+		d.Logger.Info("SLEEPING")
+		time.Sleep(10*time.Second)
+		d.Logger.Info("AWAKE...")
+		b, _ := serialize(packet)
+		write(b, d.NamedPipe)
+	}()
 
 	for {
 		select {
@@ -147,8 +160,10 @@ func (d *Daemon) RegisterPacket(data []byte) {
 	if d.PublicKey != packet.PublicKey {
 		if d.PacketMap[packet.PublicKey] == "" {
 			d.PacketMap[packet.PublicKey] = packet.IP
+
 			d.Logger.Infof("Received packet %s: %s", packet.PublicKey, packet.IP)
 			data, err := serialize(packet)
+
 			if err != nil {
 				d.Logger.Fatalf("Couldn't serialize packet: %s", err)
 			}

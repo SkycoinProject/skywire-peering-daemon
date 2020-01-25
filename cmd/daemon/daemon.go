@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	spd "github.com/SkycoinProject/skywire-peering-daemon/src/daemon"
+	spd "github.com/SkycoinProject/skywire-peering-daemon/pkg/daemon"
 )
 
 func main() {

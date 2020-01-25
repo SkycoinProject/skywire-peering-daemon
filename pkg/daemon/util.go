@@ -83,3 +83,13 @@ func Deserialize(data []byte) (Packet, error) {
 
 	return packet, nil
 }
+
+// verifyPacket checks if packet received is sent from local daemon
+func verifyPacket(pubKey string, data []byte) bool {
+	packet, err := Deserialize(data)
+	if err != nil {
+		logger(moduleName).Fatalf("Couldn't serialize packet: %s", err)
+	}
+
+	return packet.PublicKey == pubKey
+}
