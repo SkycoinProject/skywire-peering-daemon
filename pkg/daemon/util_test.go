@@ -8,14 +8,26 @@ import (
 
 func TestBroadCastPubKey(t *testing.T) {
 	type args struct {
-		PublicKey   string
+		Packet      []byte
 		BroadCastIP string
 		Port        int
 	}
-	publicKey := func() string {
-		key, _ := cipher.GenerateKeyPair()
-		return key.Hex()
+	getPacketByte := func(packet Packet) []byte {
+		d, err := serialize(packet)
+		if err != nil {
+			t.Fatalf("failed to serialize packet")
+		}
+
+		return d
 	}
+
+	key, _ := cipher.GenerateKeyPair()
+	IP := "127.0.0.1:8080"
+	packet := Packet{
+		PublicKey: key.Hex(),
+		IP:        IP,
+	}
+
 	tests := []struct {
 		name    string
 		args    args
@@ -24,7 +36,7 @@ func TestBroadCastPubKey(t *testing.T) {
 		{
 			"success",
 			args{
-				publicKey(),
+				getPacketByte(packet),
 				"255.255.255.255",
 				3000,
 			},
@@ -34,7 +46,7 @@ func TestBroadCastPubKey(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			err := BroadCastPubKey(tt.args.PublicKey, tt.args.BroadCastIP, tt.args.Port)
+			err := BroadCast(tt.args.BroadCastIP, tt.args.Port, tt.args.Packet)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("BroadCastPubKey() error = %v, wantErr %v", err, tt.wantErr)
 				return

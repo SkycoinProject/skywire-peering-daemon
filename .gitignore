@@ -4,6 +4,11 @@
 *.dll
 *.so
 *.dylib
+*.test
+*.out
+.DS_Store
 
 .idea/
 .vendor/
+
+/*-daemon
