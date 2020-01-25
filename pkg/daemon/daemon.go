@@ -17,12 +17,15 @@ const (
 	packetLength       = 10
 )
 
+// Packet defines a packet type
 type Packet struct {
 	PublicKey string
 	IP        string
 	T         int64
 }
 
+// Daemon provides configuration parameters for a
+// skywire-peering-daemon.
 type Daemon struct {
 	PublicKey string
 	localAddr string
@@ -49,7 +52,7 @@ func NewDaemon(pubKey, rAddr, namedPipe string) *Daemon {
 // BroadCastPacket broadcasts a UDP packet which contains a public key
 // to the local network's broadcast address.
 func (d *Daemon) BroadCastPacket(broadCastIP string, timer *time.Ticker, port int, data []byte) {
-	d.Logger.Infof("broadcasting packet on address %s:%d", defaultBroadCastIP, port)
+	d.Logger.Infof("Broadcasting packet on address %s:%d", defaultBroadCastIP, port)
 	for range timer.C {
 		err := BroadCast(broadCastIP, port, data)
 		if err != nil {
@@ -77,8 +80,14 @@ func (d *Daemon) Listen(port int) {
 		return
 	}
 
-	defer conn.Close()
-	d.Logger.Infof("listening on address %s", address)
+	defer func() {
+		err := conn.Close()
+		if err != nil {
+			d.Logger.WithError(err)
+		}
+	}()
+
+	d.Logger.Infof("Listening on address %s", address)
 
 	for {
 		buffer := make([]byte, 1024)
