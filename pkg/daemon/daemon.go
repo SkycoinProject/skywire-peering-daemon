@@ -100,7 +100,6 @@ func (d *Daemon) Listen(port int) {
 
 		data := buffer[:n]
 		if !verifyPacket(d.PublicKey, data) {
-			d.Logger.Info("Packets received")
 			d.PacketCh <- data
 		}
 	}
@@ -155,7 +154,7 @@ func (d *Daemon) RegisterPacket(data []byte) {
 	packet.T = time.Now().Unix()
 
 	if d.PublicKey != packet.PublicKey {
-		if d.PacketMap[packet.PublicKey] == "" {
+		if _, ok := d.PacketMap[packet.PublicKey]; !ok {
 			d.PacketMap[packet.PublicKey] = packet.IP
 
 			d.Logger.Infof("Received packet %s: %s", packet.PublicKey, packet.IP)
