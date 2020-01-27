@@ -1,14 +1,17 @@
-# skywire-peering-daemon
+## skywire-peering-daemon
 
 ##### skywire-peering-daemon is a [Skywire](https://github.com/SkycoinProject/skywire-mainnet) daemon running functionality
 
-## Build and run
+#### Overview
+A skywire-peering-daemon facilitates the setup of a local Skywire network via **stcp** transports by advertising a visor to other visors in the local network.  
 
-### Requirements
+### Build and run
+
+#### Requirements
 
 `skywire-pering-daemon` requires a version of [golang](https://golang.org/) with [go modules](https://github.com/golang/go/wiki/Modules) support.
 
-### Build
+#### Build
 
 ```
 # Clone.
@@ -21,11 +24,11 @@ $ make build
 $ make install
 ```
 
-### Run
+#### Run
 
 ```
 # Run daemon
 $ ./skywire-peering-daemon [publickey] [path/to/namedpipe]
 ```
 
-The daemon uses the default port 3000 to send broadcasts and listen to incoming broadcasts. 
+The daemon uses the default port 3000 to send broadcasts and listen to incoming broadcasts from other peering-daemons in a local network. It forwards packects received to [Skywire](https://github.com/SkycoinProject/skywire-mainnet) via **named pipes**.

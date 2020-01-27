@@ -15,7 +15,7 @@ var logger = func(moduleName string) *logging.Logger {
 	return masterLogger.PackageLogger(moduleName)
 }
 
-const moduleName = "apd.broadcast"
+const moduleName = "SPD"
 
 // BroadCast broadcasts a UDP packet containing the public key of the local visor.
 // Broadcasts is sent on the local network broadcasts address.
@@ -32,7 +32,12 @@ func BroadCast(broadCastIP string, port int, data []byte) error {
 		return err
 	}
 
-	defer conn.Close()
+	defer func() {
+		err := conn.Close()
+		if err != nil {
+			logger(moduleName).WithError(err)
+		}
+	}()
 
 	_, err = conn.Write(data)
 	if err != nil {
@@ -73,6 +78,7 @@ func write(data []byte, filePath string) error {
 	return nil
 }
 
+// Deserialize decodes a byte to a packet type
 func Deserialize(data []byte) (Packet, error) {
 	var packet Packet
 	decoder := gob.NewDecoder(bytes.NewReader(data))
@@ -82,4 +88,14 @@ func Deserialize(data []byte) (Packet, error) {
 	}
 
 	return packet, nil
+}
+
+// verifyPacket checks if packet received is sent from local daemon
+func verifyPacket(pubKey string, data []byte) bool {
+	packet, err := Deserialize(data)
+	if err != nil {
+		logger(moduleName).Fatalf("Couldn't serialize packet: %s", err)
+	}
+
+	return packet.PublicKey == pubKey
 }
