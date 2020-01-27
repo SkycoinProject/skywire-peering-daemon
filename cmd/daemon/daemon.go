@@ -14,9 +14,9 @@ func main() {
 	}
 
 	pubKey := flag.Args()[0]
-	remoteAddress := flag.Args()[1]
+	lADDR := flag.Args()[1]
 	namedPipe := flag.Args()[2]
-	daemon := spd.NewDaemon(pubKey, remoteAddress, namedPipe)
+	daemon := spd.NewDaemon(pubKey, lADDR, namedPipe)
 
 	// Run the daemon
 	daemon.Run()

@@ -37,10 +37,10 @@ type Daemon struct {
 }
 
 // NewDaemon returns a Daemon type
-func NewDaemon(pubKey, rAddr, namedPipe string) *Daemon {
+func NewDaemon(pubKey, lAddr, namedPipe string) *Daemon {
 	return &Daemon{
 		PublicKey: pubKey,
-		localAddr: rAddr,
+		localAddr: lAddr,
 		PacketMap: make(map[string]string),
 		DoneCh:    make(chan error),
 		PacketCh:  make(chan []byte, packetLength),
